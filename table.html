@@ -1,0 +1,279 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta http-equiv="X-UA-Compatible" content="IE=edge">
+<meta name="author" content="jack">
+<meta name="viewport" content="width=device-width,initial-scale=1,minimum-scale=1,maximum-scale=1,
+        user-scalable=no" />
+<!--样式-->
+<script type="text/javascript" src="ArrayUtils.js" ></script>
+<script type="text/javascript" src="Json.js" ></script>
+<script type="text/javascript" src="widget.js" ></script>
+<style type="text/css">
+.snake{
+    position: absolute;
+    border: 1px solid rgb(134, 107, 107);
+    border-radius: 8px;
+}
+.snakehead{
+    width: 16px;
+    height: 16px;
+    padding:0px;
+	font-size: 12px;
+	text-align: center;
+}
+.snakebody{
+    width: 12px;
+    height: 12px;
+}
+.food{
+    position: absolute;
+    width: 4px;
+    height: 4px;
+    border: 1px solid rgb(134, 107, 107);
+    border-radius: 2px;
+}
+body{
+margin :0px;
+border: 1px solid rgb(134, 107, 107);
+}
+body::-webkit-scrollbar {/*滚动条整体样式*/
+        width: 0px;     /*高宽分别对应横竖滚动条的尺寸*/
+        height: 0px;
+    }
+</style>
+
+</head>
+
+<title>贪吃蛇</title>
+<body style="" onclick="changePo()" onkeypress="changeOperation()">
+<select onchange="cheangeOption(value)">
+<option>
+	<span>数字键切换操作的蛇</span>
+</option>
+<optgroup title="最多允许出现几条蛇 "  label="蛇最多数量">
+<option value="1" >1</option>
+<option value="2" >2</option>
+<option value="3" >3</option>
+<option value="4" >4</option>
+<option value="5" >5</option>
+<option value="6" >6</option>
+</optgroup>
+<optgroup title="每条蛇出现的间隔时间" label="间隔时间">
+<option value = "106" >6秒</option>
+<option value = "112" >12秒</option>
+<option value = "120" >20秒</option>
+<option value = "130">30秒</option>
+<option value = "145" >45秒</option>
+<option value = "160" >60秒</option>
+</optgroup>
+<optgroup title="每次移动的 距离"  label="移动步长">
+<option value = "1003" >3px</option>
+<option value = "1006" >6px</option>
+<option value = "1009" >9px</option>
+<option value = "1012" >12px</option>
+<option value = "1016" >16px</option>
+<option value = "1018" >18px</option>
+</optgroup>
+<optgroup label="移动速度">
+<option value = "10010" >10毫秒/次</option>
+<option value = "10020" >20毫秒/次</option>
+<option value = "10050" >50毫秒/次</option>
+<option value = "10100" >100毫秒/次</option>
+<option value = "10150" >150毫秒/次</option>
+<option value = "10200">200毫秒/次</option>
+<option value = "10300" >300毫秒/次</option>
+<option value = "10400" >400毫秒/次</option>
+<option value = "10500" >500毫秒/次</option>
+</optgroup>
+</select>
+</body>
+<script type="text/javascript"   >
+document.body.style.height = document.documentElement.clientHeight-2 +"px";
+document.body.style.width = "calc(100% - 2px)";
+
+	var buchang = 12;//移动步长 --每次移动的 距离
+	var yidongsudu = 100 ;//移动速度  默认每隔100秒移动一次
+	
+	var snakeCount = 4;//最多允许出现几条蛇 
+	var jiangeshijian = 30;//每条蛇出现的间隔时间 默认30秒
+
+	var changeOperation = function (event){
+		var e = event || window.event;
+		if(e.charCode>=49&&e.charCode<59){
+			if((e.charCode-48)<=snakes.length)crentSnake = e.charCode-49;
+		}
+	}
+	var yidong = function(snake){
+		var headStyle = snake.head.style;
+		var a = Math.sqrt((snake.po.x-snake.vo.x)*(snake.po.x-snake.vo.x)+(snake.po.y-snake.vo.y)*(snake.po.y-snake.vo.y))
+		var x = buchang*((snake.po.x-snake.vo.x)/a);
+		var y = buchang*((snake.po.y-snake.vo.y)/a);
+		snake.head.style.left = (headStyle.left.substring(0, headStyle.left.length - 2) - 0 + x)+ 'px';
+		snake.head.style.top = (headStyle.top.substring(0, headStyle.top.length - 2) - 0 + y)+ 'px';
+	};
+	
+	var snakes = [];
+	var changePo = function (event){
+		var e = event || window.event;
+		snakes[crentSnake].po = {'x':e.clientX-6,'y':e.clientY-6};
+		snakes[crentSnake].vo = {'x':(snakes[crentSnake].head.style.left.substring(0, snakes[crentSnake].head.style.left.length - 2)),'y':(snakes[crentSnake].head.style.top.substring(0, snakes[crentSnake].head.style.top.length - 2)) - 0};
+	}
+	var createsnake = function(index){
+		var po = {'x':(document.body.offsetWidth*50/100),'y':(document.body.offsetHeight*50/100)};
+		var vo = {'x':(document.body.offsetWidth*38.2/100),'y':(document.body.offsetHeight*50/100)}; 
+		var snake = {"po":po,"vo":vo};
+		snake.color = (Math.floor(Math.random()*255)).toString(16)+(Math.floor(Math.random()*255)).toString(16)+(Math.floor(Math.random()*255)).toString(16);
+		var snakehead = createElement("div",{"classce":["snake","snakehead"],"style":{"background-color":"#"+snake.color,"top":vo.y+"px","left":vo.x+"px"}});
+		snakehead.innerText = index;
+		snake.head = snakehead;
+		snake.body = [];
+		snakes.push(snake);
+		document.body.appendChild(snakehead);
+	}
+	
+	var countT = function(snake){
+		var oldvo = {};
+		oldvo.x = snake.head.style.left;
+		oldvo.y = snake.head.style.top;
+		
+		var po = snake.po;
+		var vo = snake.vo;
+			yidong(snake);
+		if(isEnd(snake.head)){
+			clearyidongInterval();
+			alert("game over");
+			location.reload();
+		}else{
+			var index = isEated(snake.head);
+			if(index>=0){
+				addfood();
+				foods[index].remove();
+				foods.splice(index, 1);
+				var snakebody = createElement("div",{"classce":["snake","snakebody"],"style":{"background-color":"#"+snake.color,"top":oldvo.y,"left":oldvo.x}});
+				snake.body.unshift(snakebody)
+				document.body.insertBefore(snakebody,((snake.body.length<=1)?snake.head:snake.body[1]));
+			}else{
+				var newvo = {};
+				for(var i = 0 ;i<snake.body.length;i++){
+					newvo.x = oldvo.x ;
+					newvo.y = oldvo.y ;
+					oldvo.x = snake.body[i].style.left;
+					oldvo.y = snake.body[i].style.top;
+					snake.body[i].style.left = newvo.x;
+					snake.body[i].style.top = newvo.y;
+				}
+			}
+		}
+	};
+	
+	var foods = [];
+	var addfood =  function (){
+		var r= Math.floor(Math.random()*255);
+		var g= Math.floor(Math.random()*255);
+		var b= Math.floor(Math.random()*255);
+		
+		var t= Math.floor(Math.random()*(document.body.offsetHeight-4)+2);
+		var l= Math.floor(Math.random()*(document.body.offsetWidth-4)+2);
+		
+		var foodi = createElement("div",{"classce":["food"],"style":{"background-color":"rgb("+r+", "+g+", "+b+")","top":t+"px","left":l+"px"}});
+		foods.push(foodi);
+		document.body.appendChild(foodi);
+	};
+	var isEated  = function(snakeHead){
+		for(var i = 0 ;i<foods.length;i++){
+			if(Math.sqrt((snakeHead.offsetTop-foods[i].offsetTop)*(snakeHead.offsetTop-foods[i].offsetTop)+
+					(snakeHead.offsetLeft-foods[i].offsetLeft)*(snakeHead.offsetLeft-foods[i].offsetLeft))<9){
+				return i;
+			}
+		}
+		return -1;
+	}
+	var isEnd  = function(snakeHead){
+		if(snakeHead.offsetTop<=0||snakeHead.offsetLeft<=0||(14+snakeHead.offsetTop)>=document.body.offsetHeight||(14+snakeHead.offsetLeft)>=document.body.offsetWidth){
+			return true;
+		}
+		return false;
+	}
+	
+	var createElement = function(elementName,option,children){
+		var element = document.createElement(elementName);
+		if(option){
+			if(option.arrt)option.arrt.forEach(function(name,value){
+				element.setAttribute(name, value);
+			});
+			if(option.event)option.event.forEach(function(index, eventi){
+				if(element.addEventListener) {
+					element.addEventListener(eventi.type,function (e){eventi.listener.call(element,e,eventi.arg)},false);
+		        } else {
+		        	element.attachEvent(type, function (e){eventi.listener.call(element,e,eventi.arg)});
+		        }
+			});
+			if(option.style)option.style.forEach(function(styleNam,styleVal){
+				element.style[styleNam] = styleVal;
+			});
+			if(option.classce)option.classce.forEach(function(index,classi){
+				element.classList.add(classi);
+			});
+		}
+		if(children)children.forEach(function(index,child){
+			if(child.tagName!= undefined && child.tagName!= "undefined"){
+				element.appendChild(child);
+			}
+		});
+		return element;
+	}
+	var snakeIndexInterva = function(index){
+		return function(){
+			countT(snakes[index]);
+		}
+	}
+	var newSnake = function(){
+		if(snakelength<snakeCount){
+			snakelength++;
+			createsnake(snakelength);
+			snakeindex = snakelength-1;
+			window.snakeIntervalIndex[snakeindex] = setInterval(snakeIndexInterva(snakeindex),yidongsudu);
+		}else{
+			clearInterval(window.snakeInterval);
+		}
+	}
+	var snakelength = 0;
+	var crentSnake = 0;
+	window.snakeIntervalIndex= [];
+	newSnake();
+	window.snakeInterval = setInterval(newSnake,1000*jiangeshijian);
+	window.foodInterval = setInterval(function(){addfood();},300);
+	
+	
+	var chengjiangeshij = function (jiange){
+		clearInterval(window.snakeInterval);
+		window.snakeInterval = setInterval(newSnake,1000*jiange);
+	}
+	var clearyidongInterval = function (){
+		for(var i =0;i<snakes.length;i++){
+			clearInterval(window.snakeIntervalIndex[i]);
+		}
+	}
+	var changeyidongInterval = function (yidongsudu){
+		for(var i =0;i<snakes.length;i++){
+			window.snakeIntervalIndex[i] =  setInterval(snakeIndexInterva(i),yidongsudu);
+		}
+	}
+	var cheangeOption = function(value){
+		if(value>10000){//移动速度 毫秒/次
+			yidongsudu = value -10000;
+			clearyidongInterval();
+			changeyidongInterval(yidongsudu);
+		}else if(value>1000){//每次移动的 距离
+			buchang = value -1000;
+		}else if(value>100){//每条蛇出现的间隔时间
+			jiangeshijian = value -100;
+			chengjiangeshij(jiangeshijian);
+		}else if(value>0){//最多允许出现几条蛇
+			snakeCount = value;
+		}
+	}
+</script>
+</html>
